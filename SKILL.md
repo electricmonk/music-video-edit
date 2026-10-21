@@ -102,16 +102,17 @@ Framing rules that worked:
 ## 5. Captions (Hebrew / RTL)
 
 Render: `$MV/bin/caption "<text>" out.png <size> <centerY> <fontfile|-> <wght> <stroke%> [rtl|ltr]` → 1080×1920 transparent PNG, centered paragraph (RTL by default; pass `ltr` for Latin-script lyrics), black stroke drawn under white fill, soft shadow.
-**Good default style:** white Frank Ruhl Libre (`$MV/fonts/FrankRuhlLibre[wght].ttf`), weight 500, size 80, centerY 1420 (above the IG bottom UI), stroke 7 (thin; ~20 looks heavy), soft shadow, no trailing full stops. The macOS SF Hebrew system font looks generic. Niqqud renders fine with the bundled fonts. Always show a test frame before burning the whole clip.
+**Style is per project, not global.** Before picking anything, check memory for a style the user already approved for this project or artist and reuse it. Only if there's none, run the selection below, then save the result as a project memory (font file, weight, size, centerY, stroke, punctuation rules).
+Geometry that holds regardless of style: size ≈ 70–90 px and centerY ≈ 1420 on a 1080×1920 canvas keep text above the Instagram bottom UI. Outline thickness is usually the first complaint (stroke ≥ 20 reads heavy), so offer it as its own sheet. Niqqud renders fine with the bundled fonts.
 **Choosing a style: show, don't ask.** Instead of describing fonts, render a labelled comparison sheet over a real frame of the clip and let the user pick a number:
 ```bash
 $PY $SK/font_sheet.py "<a real lyric line>" fonts.png --video clip.mp4 --at 2          # every bundled font
-$PY $SK/font_sheet.py "<line>" weights.png --video clip.mp4 --at 2 --variant Frank:300 --variant Frank:500 --variant Frank:700
+$PY $SK/font_sheet.py "<line>" weights.png --video clip.mp4 --at 2 --variant Assistant:300 --variant Assistant:500 --variant Assistant:700
 $PY $SK/font_sheet.py "<line>" strokes.png --frame still.png --variant Heebo:500:0 --variant Heebo:500:5 --variant Heebo:500:10
 ```
 Variants are `FONT[:WGHT[:STROKE[:SIZE]]]` (font = path, a prefix of a bundled font file, or `-` for the system font). Each strip is numbered and the legend is printed. Iterate one dimension at a time (font → weight → outline → size/position), then render one full test frame before burning the clip. Send sheets with SendUserFile.
 Bundled free fonts (Hebrew + Latin): Heebo, Assistant, Rubik, Frank Ruhl Libre, Noto Sans/Serif Hebrew, David Libre, Varela Round, Secular One, Suez One, Karantina. For other scripts, drop more fonts into `$MV/fonts`. If the artwork uses a specific font, ask for the file.
-Burn: `$PY $SK/burn_captions.py captions.json out.mp4 --in '-ss S -t D -i "video.mp4"' --vf "<crop/scale prefilter>" --af "<audio fades>" --t D` (see the docstring); each caption fades in/out 0.15 s. Re-render from the source each time (no generational loss).
+Burn: `$PY $SK/burn_captions.py captions.json out.mp4 --in '-ss S -t D -i "video.mp4"' --vf "<crop/scale prefilter>" --af "<audio fades>" --t D --font <file> --wght W --size Z --y Y --stroke S` (see the docstring); each caption fades in/out 0.15 s. Re-render from the source each time (no generational loss).
 
 ## 6. Lyric sync — find the real spot
 

@@ -7,7 +7,7 @@ Without --variant, every font in the fonts dir is shown with the default weight/
 The frame is scaled/cropped to 1080x1920 (the caption canvas). Prints a numbered legend; the same numbers are drawn on the sheet.
 Examples:
   font_sheet.py "שורה לדוגמה" fonts.png --video reel.mp4 --at 2
-  font_sheet.py "שורה" weights.png --frame f.png --variant Frank:300 --variant Frank:500 --variant Frank:700
+  font_sheet.py "שורה" weights.png --frame f.png --variant Assistant:300 --variant Assistant:500 --variant Assistant:700
   font_sheet.py "שורה" strokes.png --frame f.png --variant Heebo:500:0 --variant Heebo:500:5 --variant Heebo:500:10
 """
 import argparse, glob, os, subprocess, tempfile

@@ -1,7 +1,7 @@
 """Overlay caption PNGs (rendered with the `caption` CoreText tool) onto a video.
 
 usage: python burn_captions.py captions.json OUT.mp4 --in "<ffmpeg input args>" [--vf PREFILTER] [--af AUDIOFILTER]
-         [--t DUR] [--font FILE] [--wght 500] [--size 80] [--y 1420] [--stroke 7] [--fade 0.15]
+         --font FILE [--t DUR] [--wght 500] [--size 80] [--y 1420] [--stroke 7] [--fade 0.15]
 captions.json: [{"start":1.03,"end":6.17,"text":"..."}, ...]  (times relative to output start)
 --in example: '-ss 120 -t 60 -i "/path/video.mp4"'  (first input must be the video+audio)
 --vf example: 'sendcmd=f=crop.cmd,crop=1216:2160:1312:0,scale=1080:1920:flags=lanczos'
@@ -14,7 +14,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("captions"); ap.add_argument("out")
 ap.add_argument("--in", dest="inp", required=True); ap.add_argument("--vf", default="null")
 ap.add_argument("--af", default=None); ap.add_argument("--t", default=None)
-ap.add_argument("--font", default=f"{MV}/fonts/FrankRuhlLibre[wght].ttf")
+ap.add_argument("--font", required=True, help="font file, or - for the system font (use the project's approved style)")
 ap.add_argument("--wght", default="500"); ap.add_argument("--size", default="80")
 ap.add_argument("--y", default="1420"); ap.add_argument("--stroke", default="7")
 ap.add_argument("--fade", type=float, default=0.15)
