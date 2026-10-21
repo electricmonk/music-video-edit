@@ -42,7 +42,11 @@ ffmpeg -loop 1 -framerate 25 -i cover.jpg -ss START -t DUR -i song.wav \
 
 Replace a video's audio with a snippet (and shorten): `-ss VSTART -i video.MOV -ss ASTART -t DUR -i song.wav -map 0:v -map 1:a … -t DUR`. Re-encode HEVC .MOV to H.264 (`-crf 16 -preset slow`) for compatibility.
 
-Always verify with `ffprobe -show_entries format=duration:stream=codec_type,width,height,duration`, and grab stills to *look* at results (`-vf "select='eq(n\,N)+…',scale=270:-1,tile=4x1" -frames:v 1 check.jpg`, then Read the image).
+Always verify with `ffprobe -show_entries format=duration:stream=codec_type,width,height,duration`, and *look* at results:
+```bash
+$SK/stills.sh out.mp4 check.jpg [--width 270] [--cols N] [--vf "<crop>"] 1 16 26 46   # numbered grid of frames at those times
+```
+Then Read the image. Use it for contact sheets (one time per shot), framing previews (pass the crop as `--vf`) and post-render checks.
 
 ## 3. Musically clean cuts (downbeats)
 
@@ -68,7 +72,7 @@ How to read it:
    $MV/bin/faces frames > faces.txt   # "f0001.jpg midX,width,midY,conf ..." (normalized; frame n = t (n-1)/5)
    ```
    Face width tells shot type: about 0.2 means a close-up, about 0.03 means a wide shot. Several detections mean a group shot. Wide-shot faces may need full-res frames to be detected.
-3. **Look before deciding:** build a contact sheet of one frame per shot and Read it. Identify who is who and ask which person is the subject when unclear; never assume (the person behind the camera or keyboard may be the user).
+3. **Look before deciding:** `$SK/stills.sh video.mp4 shots.jpg <one time per shot>` and Read it. Identify who is who and ask which person is the subject when unclear; never assume (the person behind the camera or keyboard may be the user).
 4. **Plan the framing per shot** (centers are fractions of source width; unlisted time is centered):
    ```json
    {"src_w":3840,"crop_w":1216,"fps":25,"duration":60,"faces":"faces.txt","sample_fps":5,
@@ -87,7 +91,7 @@ How to read it:
    ffmpeg -ss START -t DUR -i video.mp4 -vf "sendcmd=f=crop.cmd,crop=1216:2160:1312:0,scale=1080:1920:flags=lanczos" ...
    ```
    `crop`'s `x` accepts runtime commands; sendcmd times are output-relative because `-ss` comes before `-i`.
-6. **Verify:** take stills from every tracked and reframed shot (`select=eq(n\,N)` + `tile`) and Read them.
+6. **Verify:** `$SK/stills.sh` on the render at times inside every tracked/reframed shot, and Read it.
 
 Framing rules that worked:
 - **Follow a face only when it is alone in a close-up.** Every other shot stays centered or gets a fixed or pan reframe.
@@ -97,9 +101,16 @@ Framing rules that worked:
 
 ## 5. Captions (Hebrew / RTL)
 
-Render: `$MV/bin/caption "<text>" out.png <size> <centerY> <fontfile|-> <wght> <stroke%>` → 1080×1920 transparent PNG, centered RTL paragraph, black stroke drawn under white fill, soft shadow.
+Render: `$MV/bin/caption "<text>" out.png <size> <centerY> <fontfile|-> <wght> <stroke%> [rtl|ltr]` → 1080×1920 transparent PNG, centered paragraph (RTL by default; pass `ltr` for Latin-script lyrics), black stroke drawn under white fill, soft shadow.
 **Good default style:** white Frank Ruhl Libre (`$MV/fonts/FrankRuhlLibre[wght].ttf`), weight 500, size 80, centerY 1420 (above the IG bottom UI), stroke 7 (thin; ~20 looks heavy), soft shadow, no trailing full stops. The macOS SF Hebrew system font looks generic. Niqqud renders fine with the bundled fonts. Always show a test frame before burning the whole clip.
-Font picking: make a comparison sheet (one strip per font over a real frame) rather than guessing. Free Hebrew fonts fetched by setup: Heebo, Assistant, Rubik, Frank Ruhl Libre, Noto Sans/Serif Hebrew, David Libre, Varela Round, Secular One, Suez One, Karantina.
+**Choosing a style: show, don't ask.** Instead of describing fonts, render a labelled comparison sheet over a real frame of the clip and let the user pick a number:
+```bash
+$PY $SK/font_sheet.py "<a real lyric line>" fonts.png --video clip.mp4 --at 2          # every bundled font
+$PY $SK/font_sheet.py "<line>" weights.png --video clip.mp4 --at 2 --variant Frank:300 --variant Frank:500 --variant Frank:700
+$PY $SK/font_sheet.py "<line>" strokes.png --frame still.png --variant Heebo:500:0 --variant Heebo:500:5 --variant Heebo:500:10
+```
+Variants are `FONT[:WGHT[:STROKE[:SIZE]]]` (font = path, a prefix of a bundled font file, or `-` for the system font). Each strip is numbered and the legend is printed. Iterate one dimension at a time (font → weight → outline → size/position), then render one full test frame before burning the clip. Send sheets with SendUserFile.
+Bundled free fonts (Hebrew + Latin): Heebo, Assistant, Rubik, Frank Ruhl Libre, Noto Sans/Serif Hebrew, David Libre, Varela Round, Secular One, Suez One, Karantina. For other scripts, drop more fonts into `$MV/fonts`. If the artwork uses a specific font, ask for the file.
 Burn: `$PY $SK/burn_captions.py captions.json out.mp4 --in '-ss S -t D -i "video.mp4"' --vf "<crop/scale prefilter>" --af "<audio fades>" --t D` (see the docstring); each caption fades in/out 0.15 s. Re-render from the source each time (no generational loss).
 
 ## 6. Lyric sync — find the real spot
@@ -122,4 +133,5 @@ Musical repeats: a second chorus usually sits exactly N bars later (e.g. 16 bars
 
 - Output next to the source file with descriptive names (`… - Reel 9x16 (face follow, captions).mp4`); keep earlier variants unless told otherwise.
 - Encode: H.264 `-crf 17 -preset slow -pix_fmt yuv420p`, AAC 320k, `-movflags +faststart`.
+- General principle: whenever there's a visual choice (font, framing, crop position), render the options side by side and let the user pick, instead of describing them in words.
 - Send stills / test frames with SendUserFile for visual approval before long renders; say what you verified (stills) vs not (motion/sound).

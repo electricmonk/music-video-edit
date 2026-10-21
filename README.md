@@ -3,6 +3,7 @@
 A [Claude Code](https://claude.com/claude-code) skill for cutting music video clips on macOS with ffmpeg:
 
 - audio snippets over a still cover image, and swapping a video's audio
+- labelled comparison sheets (fonts, weights, outlines) and still grids for visual review
 - musically clean cuts on downbeats (beat grid + transient detection)
 - Instagram 9:16 / 3:4 crops with **face-follow** (macOS Vision), pans and per-shot reframing
 - Hebrew/RTL lyric captions (CoreText-rendered PNG overlays) synced to the vocal with Demucs + Whisper

@@ -1,5 +1,5 @@
 import AppKit
-// usage: caption <text> <out.png> <fontSize> <centerY> <fontFile|-> <weight> <strokeWidth%>
+// usage: caption <text> <out.png> <fontSize> <centerY> <fontFile|-> <weight> <strokeWidth%> [rtl|ltr]
 let a = CommandLine.arguments
 let text = a[1], out = a[2]
 let size = CGFloat(Double(a[3])!), cy = CGFloat(Double(a[4])!)
@@ -18,7 +18,7 @@ if a[5] == "-" { font = NSFont.systemFont(ofSize: size, weight: .medium) } else 
 }
 let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: W, pixelsHigh: H, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
-let para = NSMutableParagraphStyle(); para.alignment = .center; para.baseWritingDirection = .rightToLeft
+let para = NSMutableParagraphStyle(); para.alignment = .center; para.baseWritingDirection = (a.count > 8 && a[8] == "ltr") ? .leftToRight : .rightToLeft
 let shadow = NSShadow(); shadow.shadowColor = NSColor.black.withAlphaComponent(0.5); shadow.shadowBlurRadius = 8; shadow.shadowOffset = NSSize(width: 0, height: -3)
 let base: [NSAttributedString.Key: Any] = [.font: font, .paragraphStyle: para]
 var strokeA = base; strokeA[.strokeColor] = NSColor.black; strokeA[.strokeWidth] = stroke; strokeA[.shadow] = shadow
