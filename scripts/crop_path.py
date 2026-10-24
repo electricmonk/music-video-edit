@@ -39,7 +39,8 @@ for s in p["segments"]:
         pick = s.get("pick", "largest")
         xs, tx = [], []
         for t, d in zip(ts, faces):
-            if not (s["start"] <= t < s["end"]) or not d: continue
+            # skip samples within 0.25 s of either cut: frame sampling/scdet timing can leak a face from the neighbouring shot
+            if not (s["start"] + 0.25 <= t < s["end"] - 0.25) or not d: continue
             f = max(d, key=lambda q: q[1]) if pick == "largest" else min(d, key=lambda q: q[0]) if pick == "leftmost" else max(d, key=lambda q: q[0])
             tx.append(t); xs.append(f[0])
         if not tx: print("no faces in", s); continue
