@@ -20,6 +20,16 @@ ap.add_argument("--y", default="1420"); ap.add_argument("--stroke", default="7")
 ap.add_argument("--fade", type=float, default=0.15)
 o = ap.parse_args()
 
+# -ss must sit on a frame boundary: otherwise every sendcmd crop change lands one frame after the camera cut
+# (a 1-frame flash of the new shot framed for the old one)
+a = shlex.split(o.inp)
+if "-ss" in a and "-i" in a:
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=r_frame_rate",
+                        "-of", "csv=p=0", a[a.index("-i") + 1]], capture_output=True, text=True).stdout.strip()
+    if r:
+        n, d = map(int, r.split("/")); fps = n / d; f = float(a[a.index("-ss") + 1]) * fps
+        if abs(f - round(f)) > 0.01:
+            raise SystemExit(f"-ss {a[a.index('-ss') + 1]} is not on a frame boundary at {fps:g} fps; use {round(f) / fps:.3f} or {(round(f) + (1 if f > round(f) else -1)) / fps:.3f}")
 caps = json.load(open(o.captions)); tmp = tempfile.mkdtemp()
 inputs, fc, prev = [], [f"[0:v]{o.vf}[v]"], "[v]"
 for i, c in enumerate(caps):

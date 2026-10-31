@@ -56,9 +56,11 @@ $PY $SK/beats.py media.mp4 --from 170 --to 250 --near 187 --near 245 [--bpm 120]
 Prints tempo, the beat grid with low-band (kick) energy per beat, accent per bar position, and for each `--near` the refined transient attack time (5 ms resolution).
 How to read it:
 - A section "one" is typically a huge kick right after a quiet bar/beat. Confirm by counting: section lengths should be whole bars (e.g. exactly 32 bars apart). Bar = 4 × 60/BPM.
-- Start the cut ~30–60 ms **before** the attack, snapped to a video frame boundary (multiple of 1/fps) so the transient isn't clipped; 10 ms audio fade-in.
+- Start the cut ~30–60 ms **before** the attack, snapped to a video frame boundary (multiple of 1/fps; `burn_captions.py` refuses otherwise — an off-grid `-ss` makes every face-follow crop change land one frame after the camera cut, a visible 1-frame flash) so the transient isn't clipped; 10 ms audio fade-in.
 - "End on the one of bar N" = **include** that downbeat: cut one beat after the attack with a ~0.25 s fade-out. Ending *just before* it is a different thing (seamless loop) — ask if unclear.
 - Use `-ss` before `-i` (fast + frame-accurate when re-encoding).
+- Avoid starting a few frames before a camera cut (a sub-second opening shot reads as a glitch); prefer the next beat after the cut.
+- Verify cuts on the render: per-frame mean abs diff on a tiny grayscale decode; every hard cut must be a single frame and match the source cut list.
 
 ## 4. Vertical crops & the face-follow trick
 
